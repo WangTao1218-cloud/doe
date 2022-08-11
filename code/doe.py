@@ -2,7 +2,7 @@
 """
 Created on Tue Aug 17 10:11:56 2021
 
-@author: wu
+@author: wu\wang
 """
 import numpy as np
 from numpy.core import *
