@@ -4,14 +4,11 @@ Created on Tue Aug 17 10:11:56 2021
 
 @author: wu\wang
 """
-import numpy as np
 from numpy.core import *
 from scipy.fftpack import *
 import matplotlib.pyplot as plt
 from numpy.lib import *
 from PIL import Image
-from scipy import special
-import math
 import time
 from skimage import metrics
 
@@ -166,7 +163,7 @@ if flag == 0:
 
     for i in range(1):
         RPM = np.exp(1j * 2 * np.pi * np.random.rand(N, N))
-        g1 = gs_iteration_phase(U, z0, times)[1]
+        g1 = gs_iteration_phase(Ui, z0, times)[1]
         G1 = g1[int(M / 2 - M1 / 2): int(M / 2 + M1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)]
         SLM_CGH = zeros([1080, 1920])
         M1, N1 = G1.shape
