@@ -10,8 +10,6 @@ from scipy.fftpack import *
 import matplotlib.pyplot as plt
 from numpy.lib import *
 from PIL import Image
-from scipy import special
-import math
 import time
 from skimage import metrics
 from mayavi import mlab
@@ -19,22 +17,19 @@ from mayavi import mlab
 N0 = 1024
 N = 2048
 M = N
-# X0 = 1/3 * np.ones([int(N0/4), N0])
-X0 = Image.open("C://SCU//2021//UD//holo//code//data//image//lena.jpg").convert('L')
+
+X0 = Image.open("../data/circle.png").convert('L')
 X2 = X0.resize((N0, N0), Image.ANTIALIAS)
 X2 = np.array(X2)
+
 M2, N2 = np.shape(X2)
+M1 = M2 / 4
+N1 = N2
+
 Ui = np.zeros([2048, 2048])
 Ui[int(M / 2 - M2 / 2): int(M / 2 + M2 / 2), int(N / 2 - N2 / 2): int(N / 2 + N2 / 2)] = X2
-
-X1 = X0.resize((int(N0), int(N0 / 4)), Image.ANTIALIAS)
-X1 = np.array(X1)
-M1, N1 = np.shape(X1)
-
 plt.figure("初始")
 plt.imshow(abs(Ui))
-
-RPM = exp(1j * 2 * pi * np.random.rand(N, N))
 
 waveB = 465e-9  # 波长
 waveG = 525e-9
@@ -82,11 +77,10 @@ def gs_iteration_phase(U, kk, z0, times):
         gg[int(3 * M / 8 - M1): int(3 * M / 8 + M1), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)] = 0
         gg[int(9 * M / 16 - M1 / 2): int(9 * M / 16 + M1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)] = 0
 
-        Ir = BLAS(gr, kr, -z0)
-        Ib = BLAS(gb, kb, -z0)
-        Ig = BLAS(gg, kg, -z0)
+        Ir = BLAS(gr, -kr, z0)
+        Ib = BLAS(gb, -kb, z0)
+        Ig = BLAS(gg, -kg, z0)
         I = Ig + Ir + Ib
-        # I = BLAS(g2, -k, z0)
         U = abs(Ui) * np.exp(1j * angle(I))
         # print(i)
     return Ir, Ib, Ig, I
@@ -98,29 +92,16 @@ def get_psnr_ssim(prev, value):
     return psnr, ssim
 
 
-def representation(I, z0, times, runtime):
-    I_crop = I[int(M / 2 - N1 / 2): int(M / 2 + N1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)]  # 裁剪
-    reference = Ui[int(M / 2 - N1 / 2): int(M / 2 + N1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)]
-    p, s = get_psnr_ssim(reference, I_crop)
-
-    print(runtime)
-    plt.figure("重建")
-    plt.subplot(2, 2, 1)
-    plt.imshow(abs(I_crop), cmap="gray")
-    plt.text(0, -60, 'psnr:' + str(p) + ',   ssim:' + str(s))
-    plt.text(0, -10, 'run time:' + str(round(runtime, 4)) + 's')
-    plt.text(550, -10, 'z0=' + str(z0))  ## '叠加 ' + str(times) + ' times,' +  add random phase
-    # plt.axis('off')
-
-
 flag = 1
 # 模拟再现
 if flag == 1:
     z0 = 0.3
-    times = 5
+    times = 20
     start = time.perf_counter()
     kk = [kr, kg, kb]
     Ir, Ib, Ig, I = gs_iteration_phase(Ui, kk, z0, times)
+    end = time.perf_counter()
+    print("运行耗时", end - start)
     I_crop = I[int(M / 2 - N1 / 2): int(M / 2 + N1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)]  # 裁剪
     # reference = UW[int(M / 2 - N1 / 2): int(M / 2 + N1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)]
     p, s = get_psnr_ssim(X2, I_crop)
@@ -135,14 +116,12 @@ if flag == 1:
     plt.imshow(abs(Ib))
     plt.subplot(2, 2, 4)
     plt.imshow(abs(I_crop))
-    # mlab.imshow(abs(I))
-    # x = np.linspace(-1 / (p2 ), 1 / (p2 ), N)
-    # y = np.linspace(-1 / (p2 ), 1 / (p2 ), N)
-    # mlab.surf(x, y, abs(I), warp_scale="auto")
-    # mlab.show()
     plt.show()
-
-    # representation(I, z0, times, end - start)
+    # mlab.imshow(abs(I))
+    x = np.linspace(-1 / (p2), 1 / (p2), N)
+    y = np.linspace(-1 / (p2), 1 / (p2), N)
+    mlab.surf(x, y, abs(I), warp_scale="auto")
+    mlab.show()
 
 # 生成n张全息图
 if flag == 0:
@@ -159,6 +138,5 @@ if flag == 0:
         SLM_CGH[int(1080 / 2 - M1 / 2):int(1080 / 2 + M1 / 2), int(1920 / 2 - M1 / 2):int(1920 / 2 + M1 / 2)] = holo
         plt.imsave('C:\\SCU\\2021\\UD\\holo\\code\\data\\TEST\\limit_ono\\' + str(i) + 'gNO.png', abs(SLM_CGH),
                    cmap='gray')
-
 
 # %%

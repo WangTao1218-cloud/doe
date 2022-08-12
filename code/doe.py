@@ -4,6 +4,7 @@ Created on Tue Aug 17 10:11:56 2021
 
 @author: wu\wang
 """
+import numpy as np
 from numpy.core import *
 from scipy.fftpack import *
 import matplotlib.pyplot as plt
