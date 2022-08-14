@@ -96,10 +96,12 @@ flag = 1
 # 模拟再现
 if flag == 1:
     z0 = 0.3
-    times = 20
+    times = 1
     start = time.perf_counter()
     kk = [kr, kg, kb]
+
     Ir, Ib, Ig, I = gs_iteration_phase(Ui, kk, z0, times)
+
     end = time.perf_counter()
     print("运行耗时", end - start)
     I_crop = I[int(M / 2 - N1 / 2): int(M / 2 + N1 / 2), int(N / 2 - N1 / 2): int(N / 2 + N1 / 2)]  # 裁剪
